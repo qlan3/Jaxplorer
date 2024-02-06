@@ -1,0 +1,38 @@
+{
+  "env": [
+    {"name": ["Asterix-MinAtar-v1", "Breakout-MinAtar-v1", "Freeway-MinAtar-v1", "SpaceInvaders-MinAtar-v1"]},
+    {
+      "name": ["Seaquest-MinAtar-v1"],
+      "kwargs": [{"max_episode_steps": [10000]}]
+    }
+  ],
+  "train_steps": [5e6],
+  "exploration_steps": [5e3],
+  "buffer_size": [1e5],
+  "agent": [{
+    "name": ["DQN"],
+    "update_per_step": [1],
+    "target_update_freq": [1000],
+    "net_cfg": [{
+      "feature_dim": [128],
+      "hidden_act": ["ReLU"]
+    }],
+    "eps_steps": [1e5],
+    "eps_start": [1.0],
+    "eps_end": [0.1]
+  }],
+  "optim": [{
+    "name": ["Adam"],
+    "kwargs": [{"learning_rate": [3e-3, 1e-3, 3e-4, 1e-4, 3e-5, 1e-5]}]
+  }],
+  "batch_size": [32],
+  "display_interval": [1e5],
+  "show_progress": [false],
+  "ckpt_interval": [1e5],
+  "test_interval": [5e4],
+  "test_episodes": [5],
+  "discount": [0.99],
+  "seed": [1],
+  "device": ["cpu"],
+  "generate_random_seed": [true]
+}

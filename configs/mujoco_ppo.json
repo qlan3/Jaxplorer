@@ -1,0 +1,36 @@
+{
+  "env": [{"name": ["HalfCheetah-v4", "Hopper-v4", "Walker2d-v4", "Ant-v4", "Humanoid-v4", "Swimmer-v4"]}],
+  "train_steps": [1e6],
+  "agent": [{
+    "name": ["PPO"],
+    "collect_steps": [2048],
+    "gae_lambda": [0.95],
+    "update_epochs": [10],
+    "clip_ratio": [0.2],
+    "vf_coef": [0.5],
+    "ent_coef": [0.0],
+    "actor_net_cfg": [{
+      "hidden_dims": [[64,64]],
+      "hidden_act": ["Tanh"]
+    }],
+    "critic_net_cfg": [{
+      "hidden_dims": [[64,64]],
+      "hidden_act": ["Tanh"]
+    }]
+  }],
+  "optim": [{
+    "name": ["Adam"],
+    "anneal_lr": [true],
+    "kwargs": [{"learning_rate": [3e-4], "anneal_lr": [true], "eps": [1e-5], "max_grad_norm": [0.5]}]
+  }],
+  "batch_size": [64],
+  "display_interval": [1],
+  "show_progress": [false],
+  "ckpt_interval": [5],
+  "test_interval": [-1],
+  "test_episodes": [5],
+  "discount": [0.99],
+  "seed": [42],
+  "device": ["cuda"],
+  "generate_random_seed": [true]
+}

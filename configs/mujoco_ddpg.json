@@ -1,0 +1,37 @@
+{
+  "env": [{"name": ["HalfCheetah-v4", "Hopper-v4", "Walker2d-v4", "Ant-v4", "Humanoid-v4", "Swimmer-v4"]}],
+  "train_steps": [1e6],
+  "exploration_steps": [1e4],
+  "buffer_size": [1e6],
+  "agent": [{
+    "name": ["DDPG"],
+    "action_noise": [0.1],
+    "actor_update_steps": [1],
+    "actor_net_cfg": [{
+      "hidden_dims": [[256,256]],
+      "hidden_act": ["ReLU"]
+    }],
+    "critic_num": [1],
+    "critic_update_steps": [1],
+    "critic_net_cfg": [{
+      "hidden_dims": [[256,256]],
+      "hidden_act": ["ReLU"]
+    }]
+  }],
+  "optim": [{
+    "name": ["Adam"],
+    "kwargs": [{"learning_rate": [3e-4]}]
+  }],
+  "net_update_steps": [1],
+  "batch_size": [256],
+  "display_interval": [1e4],
+  "show_progress": [false],
+  "ckpt_interval": [1e5],
+  "test_interval": [1e4],
+  "test_episodes": [5],
+  "discount": [0.99],
+  "tau": [0.005],
+  "seed": [1],
+  "device": ["cuda"],
+  "generate_random_seed": [true]
+}

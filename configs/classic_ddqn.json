@@ -1,0 +1,38 @@
+{
+  "env": [
+    {
+      "name": ["MountainCar-v0"],
+      "kwargs": [{"max_episode_steps": [1000]}]
+    },
+    {"name": ["Acrobot-v1", "CartPole-v1"]}
+  ],
+  "train_steps": [1e5],
+  "exploration_steps": [1e3],
+  "buffer_size": [1e4],
+  "agent": [{
+    "name": ["DDQN"],
+    "update_per_step": [1],
+    "target_update_freq": [100],
+    "net_cfg": [{
+      "hidden_dims": [[32,32]],
+      "hidden_act": ["ReLU"]
+    }],
+    "eps_steps": [1e3],
+    "eps_start": [1.0],
+    "eps_end": [0.01]
+  }],
+  "optim": [{
+    "name": ["Adam"],
+    "kwargs": [{"learning_rate": [1e-2, 3e-3, 1e-3, 3e-4, 1e-4, 3e-5]}]
+  }],
+  "batch_size": [32],
+  "display_interval": [5e3],
+  "show_progress": [false],
+  "ckpt_interval": [1e4],
+  "test_interval": [1e3],
+  "test_episodes": [5],
+  "discount": [0.99],
+  "seed": [1],
+  "device": ["cpu"],
+  "generate_random_seed": [true]
+}
