@@ -1,6 +1,6 @@
 # Jaxplorer
 
-Jaxplorer is a Jax reinforcement learning (RL) framework for **exploring** new ideas.  
+Jaxplorer is a **Jax** reinforcement learning (RL) framework for **exploring** new ideas.  
 
 > [!WARNING]
 > This project is still experimental, APIs could change without notice.  
@@ -9,14 +9,19 @@ Jaxplorer is a Jax reinforcement learning (RL) framework for **exploring** new i
 > [!NOTE]
 > For PyTorch version, please check [Explorer](https://github.com/qlan3/Explorer).
 
+## TODO
+
+- Improve the performance of PPO in MuJoCo tasks.
+- Add more algorithms, such as DQN for Atari games.
+
 
 ## Requirements
 
 - Python: 3.11
 - [Jax](https://jax.readthedocs.io/en/latest/installation.html): >=0.4.20
-- [Gymnasium](https://github.com/Farama-Foundation/Gymnasium): pip install gymnasium==0.29.1
-- [Mujoco](https://github.com/google-deepmind/mujoco): pip install mujoco==2.3.7
-- [Gymnasium(mujoco)](https://gymnasium.farama.org/environments/mujoco/): pip install gymnasium[mujoco]
+- [Gymnasium](https://github.com/Farama-Foundation/Gymnasium): `pip install gymnasium==0.29.1`
+- [MuJoCo](https://github.com/google-deepmind/mujoco): `pip install mujoco==2.3.7`
+- [Gymnasium(mujoco)](https://gymnasium.farama.org/environments/mujoco/): `pip install gymnasium[mujoco]`
 - Others: Please check `requirements.txt`.
 
 
@@ -31,7 +36,6 @@ Jaxplorer is a Jax reinforcement learning (RL) framework for **exploring** new i
 - [Twin Delayed Deep Deterministic Policy Gradients (TD3)](https://arxiv.org/pdf/1802.09477.pdf)
 - [Continuous Deep Q-Learning with Model-based Acceleration (NAF)](https://arxiv.org/pdf/1603.00748.pdf): model-free version; a different exploration strategy is applied for simplicity.
 
-TODO: add more algorithms and improve the performance of PPO.
 
 ## Experiments
 
