@@ -11,6 +11,7 @@ Jaxplorer is a **Jax** reinforcement learning (RL) framework for **exploring** n
 
 ## TODO
 
+- Add more descriptions about slurm and hyper-parameter comparison.
 - Improve the performance of PPO in MuJoCo tasks.
 - Add more algorithms, such as DQN for Atari games.
 
@@ -92,7 +93,6 @@ parallel --eta --ungroup python main.py --config_file ./configs/classic_dqn.json
 ### Slurm (Optional)
 
 Slurm is supported as well. Please check `submit.py`.
-TODO: add more details.
 
 
 ### Analysis (Optional)
@@ -103,12 +103,10 @@ To analyze the experimental results, just run:
 
 Inside `analysis.py`, `unfinished_index` will print out the configuration indexes of unfinished jobs based on the existence of the result file. `memory_info` will print out the memory usage information and generate a histogram to show the distribution of memory usages in directory `logs/classic_dqn/0`. Similarly, `time_info` will print out the time information and generate a histogram to show the distribution of time in directory `logs/classic_dqn/0`. Finally, `analyze` will generate `csv` files that store training and test results. Please check `analysis.py` for more details. More functions are available in `utils/plotter.py`.
 
-TODO: add more details about hyper-parameter comparison.
 
+## Citation
 
-## Cite
-
-If you find this repo useful to your research, please cite my paper if related. Otherwise, please cite this repo:
+If you find this repo useful to your research, please cite this repo:
 
 ~~~bibtex
 @misc{Jaxplorer,
