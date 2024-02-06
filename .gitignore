@@ -9,6 +9,7 @@ logfile
 *DS_Store*
 job_idx_*
 procfile
+slacker_msger.py
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
