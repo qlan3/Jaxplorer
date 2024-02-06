@@ -10,6 +10,7 @@ logfile
 job_idx_*
 procfile
 slacker_msger.py
+backup
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
