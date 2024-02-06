@@ -1,9 +1,14 @@
 # Jaxplorer
 
-Jaxplorer is a Jax reinforcement learning framework for **exploring** new ideas.  
-For PyTorch reinforcement learning framework, please check [Explorer](https://github.com/qlan3/Explorer).
+Jaxplorer is a Jax reinforcement learning (RL) framework for **exploring** new ideas.  
 
-Note: this repo is still under development and in its early stage.
+> [!WARNING]
+> This project is still experimental, APIs could change without notice.  
+> Pure Jax RL tasks are not supported at this stage.
+
+> [!NOTE]
+> For PyTorch version, please check [Explorer](https://github.com/qlan3/Explorer).
+
 
 ## Requirements
 
@@ -117,3 +122,4 @@ If you find this repo useful to your research, please cite my paper if related. 
 - [Explorer](https://github.com/qlan3/Explorer)
 - [Jax RL](https://github.com/ikostrikov/jaxrl)
 - [CleanRL](https://github.com/vwxyzjn/cleanrl)
+- [PureJaxRL](https://github.com/luchris429/purejaxrl)
