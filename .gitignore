@@ -11,6 +11,7 @@ job_idx_*
 procfile
 slacker_msger.py
 backup
+run.sh
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
