@@ -89,7 +89,6 @@ class SAC(BaseAgent):
         self.result[mode].append(result_dict)
         obs, info = self.env[mode].reset()
       # Update the agent
-      t = time.time()
       if step > self.cfg['exploration_steps']:
         if step % self.cfg['agent']['critic_update_steps'] == 0 or step % self.cfg['agent']['actor_update_steps'] == 0:
           batch = self.replay.sample(self.cfg['batch_size'])
@@ -106,7 +105,6 @@ class SAC(BaseAgent):
               # Update temperature
               if self.agent_name in ['SAC']:
                 self.temp_state = self.update_temperature(self.temp_state, entropy)
-      print('update time:', time.time()-t)
       # Display log, test, and save checkpoint
       self.log_test_save(step, self.train_steps, mode)
   

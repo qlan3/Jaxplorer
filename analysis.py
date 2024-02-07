@@ -59,7 +59,7 @@ def analyze(exp, runs=1):
   plotter = Plotter(cfg)
 
   plotter.csv_merged_results('Train', get_csv_result_dict, get_process_result_dict)
-  # plotter.plot_results(mode='Train', indexes='all')
+  plotter.plot_results(mode='Train', indexes='all')
 
   # plotter.csv_merged_results('Test', get_csv_result_dict, get_process_result_dict)
   # plotter.plot_results(mode='Test', indexes='all')
