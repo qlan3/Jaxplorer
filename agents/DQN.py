@@ -43,7 +43,7 @@ class DQN(BaseAgent):
       net_cfg = self.cfg['agent']['net_cfg']
     )
     self.critic_state = TargetState.create(
-      apply_fn = jax.jit(self.critic_net.apply),
+      apply_fn = self.critic_net.apply,
       params = self.critic_net.init(critic_seed, dummy_obs),
       target_params = self.critic_net.init(critic_seed, dummy_obs),
       tx = self.set_optim(self.cfg['optim']['name'], self.cfg['optim']['kwargs'])

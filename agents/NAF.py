@@ -33,7 +33,7 @@ class NAF(SAC):
     )
     self.actor_state = None
     self.critic_state = TargetState.create(
-      apply_fn = jax.jit(self.critic_net.apply),
+      apply_fn = self.critic_net.apply,
       params = self.critic_net.init(critic_seed, dummy_obs, dummy_action),
       target_params = self.critic_net.init(critic_seed, dummy_obs, dummy_action),
       tx = self.set_optim(self.cfg['optim']['name'], self.cfg['optim']['kwargs'])

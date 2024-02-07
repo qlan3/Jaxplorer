@@ -48,19 +48,19 @@ class SAC(BaseAgent):
     )
     self.temp_net = Temperature(init_temp=1.0)
     self.actor_state = TrainState.create(
-      apply_fn = jax.jit(self.actor_net.apply),
+      apply_fn = self.actor_net.apply,
       params = self.actor_net.init(actor_seed, dummy_obs),
       tx = self.set_optim(self.cfg['optim']['name'], self.cfg['optim']['kwargs'])
     )
     self.critic_state = TargetState.create(
-      apply_fn = jax.jit(self.critic_net.apply),
+      apply_fn = self.critic_net.apply,
       params = self.critic_net.init(critic_seed, dummy_obs, dummy_action),
       target_params = self.critic_net.init(critic_seed, dummy_obs, dummy_action),
       tx = self.set_optim(self.cfg['optim']['name'], self.cfg['optim']['kwargs'])
     )
     self.target_entropy = -0.5 * self.action_size
     self.temp_state = TrainState.create(
-      apply_fn = jax.jit(self.temp_net.apply),
+      apply_fn = self.temp_net.apply,
       params = self.temp_net.init(temp_seed),
       tx = self.set_optim(self.cfg['optim']['name'], self.cfg['optim']['kwargs'])
     )

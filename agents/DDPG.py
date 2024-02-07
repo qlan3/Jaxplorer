@@ -32,13 +32,13 @@ class DDPG(SAC):
       net_cfg = self.cfg['agent']['critic_net_cfg']
     )
     self.actor_state = TargetState.create(
-      apply_fn = jax.jit(self.actor_net.apply),
+      apply_fn = self.actor_net.apply,
       params = self.actor_net.init(actor_seed, dummy_obs),
       target_params = self.actor_net.init(actor_seed, dummy_obs),
       tx = self.set_optim(self.cfg['optim']['name'], self.cfg['optim']['kwargs'])
     )
     self.critic_state = TargetState.create(
-      apply_fn = jax.jit(self.critic_net.apply),
+      apply_fn = self.critic_net.apply,
       params = self.critic_net.init(critic_seed, dummy_obs, dummy_action),
       target_params = self.critic_net.init(critic_seed, dummy_obs, dummy_action),
       tx = self.set_optim(self.cfg['optim']['name'], self.cfg['optim']['kwargs'])
