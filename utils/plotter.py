@@ -376,6 +376,41 @@ class Plotter(object):
     plt.cla()   # clear axis
     plt.close() # close window
 
+  def get_top_result(self, group_keys, group_fn='mean_std', perf_name=None, ascending=False, top_n=None, mode='Test', dn=3, markdown=True):
+    '''
+    Print averaged top results
+      group_keys: keys to group all results.
+      perf_name: the performance metric from results_{mode}.csv, such as Return (mean).
+      ascending: sort results with ascending/decending order.
+      top_n: select top_n results. When it is None, select all results.
+      mode: Train or Test.
+      dn: number of decimal digits.
+    '''    
+    if perf_name is None:
+      perf_name = f'{self.y_label} (mean)'
+    config_file = f'./configs/{self.exp}.json'
+    results_file = f'./logs/{self.exp}/0/results_{mode}_merged.csv'
+    assert os.path.exists(results_file), f'{results_file} does not exist. Please generate it first with csv_unmerged_results.'
+    assert os.path.exists(config_file), f'{config_file} does not exist.'
+    # Load all results
+    results = pd.read_csv(results_file)
+    # Select results based on the constraints and param_name
+    def min_max(group):
+      l = group.sort_values(by=perf_name, ascending=ascending)[:top_n][perf_name].to_numpy(na_value=0)
+      return pd.DataFrame({'min-->max': [f'({l.min():.{dn}f}, {l.max():.{dn}f})']})
+    def mean_std(group):
+      l = group.sort_values(by=perf_name, ascending=ascending)[:top_n][perf_name].to_numpy(na_value=0)
+      return pd.DataFrame({'mean+/-std': [f'({l.mean():.{dn}f}, {l.std():.{dn}f})']})
+    grouped_results = results.groupby(by=group_keys).apply(eval(group_fn)).reset_index(level=-1, drop=True)
+    print('Performance measurement:', perf_name)
+    print(f'Top {top_n} results:')
+    print(grouped_results)
+    print('-'*20)
+    if markdown:
+      markdown_table = grouped_results.to_markdown(tablefmt='github')
+      print('Markdown Table:')
+      print(markdown_table)
+      print('-'*20)
 
 def one_sided_ema(xolds, yolds, low=None, high=None, n=512, decay_steps=1.0, low_counts_threshold=0.0):
   ''' Copy from baselines.common.plot_util

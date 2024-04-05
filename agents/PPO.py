@@ -170,6 +170,8 @@ class PPO(BaseAgent):
     else: # mode == 'Test'
       action, v, log_pi, self.seed = self.optimal_action(self.actor_state, self.critic_state, obs, self.seed)
     action = jax.device_get(action)[0]
+    v = jax.device_get(v)[0]
+    log_pi = jax.device_get(log_pi)[0]
     return dict(action=action, v=v, log_pi=log_pi)
 
   @partial(jax.jit, static_argnames=['self'])

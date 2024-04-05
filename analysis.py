@@ -1,5 +1,8 @@
 import os
-import math
+import numpy as np
+from scipy.stats import bootstrap
+from collections import namedtuple
+
 from utils.plotter import Plotter
 from utils.sweeper import unfinished_index, time_info, memory_info
 
@@ -9,17 +12,28 @@ def get_process_result_dict(result, config_idx, mode='Train'):
     'Env': result['Env'][0],
     'Agent': result['Agent'][0],
     'Config Index': config_idx,
-    'Return (mean)': result['Return'][-10:].mean(skipna=False) if mode=='Train' else result['Return'][-5:].mean(skipna=False)
+    'Return (mean)': result['Return'][-10:].mean(skipna=True) if mode=='Train' else result['Return'][-5:].mean(skipna=True)
   }
   return result_dict
 
-def get_csv_result_dict(result, config_idx, mode='Train'):
+def get_csv_result_dict(result, config_idx, mode='Train', ci=95, method='percentile'):
+  perf_mean = result['Return (mean)'].values.tolist()
+  if len(perf_mean) > 1:
+    CI = bootstrap(
+      (perf_mean,),
+      np.mean, confidence_level=ci/100,
+      method=method
+    ).confidence_interval
+  else:
+    CI = namedtuple('ConfidenceInterval', ['low', 'high'])(low=perf_mean[0], high=perf_mean[0])
   result_dict = {
     'Env': result['Env'][0],
     'Agent': result['Agent'][0],
     'Config Index': config_idx,
-    'Return (mean)': result['Return (mean)'].mean(skipna=False),
-    'Return (se)': result['Return (mean)'].sem(ddof=0)
+    'Return (mean)': result['Return (mean)'].mean(skipna=True),
+    'Return (se)': result['Return (mean)'].sem(ddof=0),
+    'Return (bmean)': (CI.high + CI.low) / 2,
+    f'Return (ci={ci})': (CI.high - CI.low) / 2,
   }
   return result_dict
 
@@ -64,6 +78,8 @@ def analyze(exp, runs=1):
   # plotter.csv_merged_results('Test', get_csv_result_dict, get_process_result_dict)
   # plotter.plot_results(mode='Test', indexes='all')
 
+  # plotter.get_top_result(group_keys=group_keys, group_fn='mean_std', top_n=1, mode='Test', markdown=False, dn=3)
+  
   # Hyper-parameter Comparison
   # plotter.csv_unmerged_results('Train', get_process_result_dict)
   # plotter.csv_unmerged_results('Test', get_process_result_dict)
