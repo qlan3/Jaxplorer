@@ -40,7 +40,7 @@ class BaseAgent(object):
     # Make environment
     self.env = {
       'Train': make_env(self.env_name, **self.cfg['env']['kwargs']),
-      'Test': make_env(self.env_name, deque_size=cfg['test_episodes'], **self.cfg['env']['kwargs'])
+      'Test': make_env(self.env_name, deque_size=self.cfg['test_episodes'], **self.cfg['env']['kwargs'])
     }
     self.env['Train'].set_seed(self.cfg['seed'])
     self.env['Test'].set_seed(self.cfg['seed']+42)

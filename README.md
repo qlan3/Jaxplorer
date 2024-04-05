@@ -16,7 +16,7 @@ Jaxplorer is a **Jax** reinforcement learning (RL) framework for **exploring** n
 - Add more algorithms, such as DQN for Atari games.
 
 
-## Requirements
+## Installation
 
 - Python: 3.11
 - [Jax](https://jax.readthedocs.io/en/latest/installation.html): >=0.4.20
@@ -119,7 +119,7 @@ If you find this repo useful to your research, please cite this repo:
 }
 ~~~
 
-# Acknowledgements
+# Acknowledgement
 
 - [Explorer](https://github.com/qlan3/Explorer)
 - [Jax RL](https://github.com/ikostrikov/jaxrl)
