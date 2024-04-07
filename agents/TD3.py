@@ -8,7 +8,7 @@ from agents.DDPG import DDPG
 
 class TD3(DDPG):
   """
-  Implementation of TD3 (Twin Delayed Deep Deterministic Policy Gradients)
+  Implementation of Twin Delayed Deep Deterministic Policy Gradients.
   """
   @partial(jax.jit, static_argnames=['self'])
   def update_critic(self, actor_state, critic_state, temp_state, batch, seed):

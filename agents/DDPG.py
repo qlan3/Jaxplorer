@@ -11,7 +11,7 @@ from components.networks import MLPDeterministicActor, MLPQCritic
 
 class DDPG(SAC):
   """
-  Implementation of DDPG (Deep Deterministic Policy Gradient)
+  Implementation of Deep Deterministic Policy Gradient.
   """
   def createNN(self):
     # Create train_states and nets of actor, critic, and temperature

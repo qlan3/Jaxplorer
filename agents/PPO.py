@@ -1,7 +1,6 @@
 import jax
 import time
 import math
-import optax
 import distrax
 import numpy as np
 from tqdm import tqdm
@@ -39,7 +38,7 @@ from components.networks import MLPVCritic, MLPGaussianActor, MLPCategoricalActo
 
 class PPO(BaseAgent):
   """
-  Implementation of PPO.
+  Implementation of Proximal Policy Optimization.
   """
   def __init__(self, cfg):
     super().__init__(cfg)
@@ -57,31 +56,6 @@ class PPO(BaseAgent):
     self.replay = FiniteReplay(self.cfg['agent']['collect_steps'], keys=['obs', 'action', 'reward', 'mask', 'v', 'log_pi'])
     # Set networks
     self.createNN()
-
-  def set_optim(self, optim_name, optim_kwargs, schedule=None):
-    optim_kwargs.setdefault('anneal_lr', False)
-    optim_kwargs.setdefault('grad_clip', -1)
-    optim_kwargs.setdefault('max_grad_norm', -1)
-    anneal_lr = optim_kwargs['anneal_lr']
-    grad_clip = optim_kwargs['grad_clip']
-    max_grad_norm = optim_kwargs['max_grad_norm']
-    del optim_kwargs['anneal_lr'], optim_kwargs['grad_clip'], optim_kwargs['max_grad_norm']
-    assert not (grad_clip > 0 and max_grad_norm > 0), 'Cannot apply both grad_clip and max_grad_norm at the same time.'
-    if anneal_lr and schedule is not None:
-      optim_kwargs['learning_rate'] = schedule
-    if grad_clip > 0:
-      optim = optax.chain(
-        optax.clip(grad_clip),
-        getattr(optax, optim_name.lower())(**optim_kwargs)
-      )
-    elif max_grad_norm > 0:
-      optim = optax.chain(
-        optax.clip_by_global_norm(max_grad_norm),
-        getattr(optax, optim_name.lower())(**optim_kwargs)
-      )
-    else:
-      optim = getattr(optax, optim_name.lower())(**optim_kwargs)
-    return optim
 
   def createNN(self):
     # Create nets and train_states
@@ -128,9 +102,7 @@ class PPO(BaseAgent):
         # Take a env step
         next_obs, reward, terminated, truncated, info = self.env[mode].step(action)
         # Save experience
-        # done = terminated or truncated
-        # mask = self.discount * (1-done)
-        mask = self.discount * (1-terminated)
+        mask = self.discount * (1 - terminated)
         self.save_experience(obs, action, reward, mask, v, log_pi)
         # Update observation
         obs = next_obs
@@ -264,7 +236,7 @@ class PPO(BaseAgent):
       v_clipped = batch['v'] + (v - batch['v']).clip(-self.cfg['agent']['clip_ratio'], self.cfg['agent']['clip_ratio'])
       critic_loss_unclipped = jnp.square(v - batch['v_target'])
       critic_loss_clipped = jnp.square(v_clipped - batch['v_target'])
-      critic_loss = 0.5 * jnp.maximum(critic_loss_unclipped, critic_loss_clipped).mean()      
+      critic_loss = 0.5 * jnp.maximum(critic_loss_unclipped, critic_loss_clipped).mean()
       # Compute actor loss
       action_mean, action_log_std = actor_state.apply_fn(actor_param, batch['obs'])
       pi = distrax.MultivariateNormalDiag(action_mean, jnp.exp(action_log_std))

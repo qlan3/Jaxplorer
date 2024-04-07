@@ -9,7 +9,7 @@ logfile
 *DS_Store*
 job_idx_*
 procfile
-slacker_msger.py
+slacker.py
 backup
 run.sh
 

@@ -12,7 +12,7 @@ from components.networks import MLPQNet, MinAtarQNet
 
 class DQN(BaseAgent):
   """
-  Implementation of DQN.
+  Implementation of Deep Q-Learning.
   """
   def __init__(self, cfg):
     super().__init__(cfg)

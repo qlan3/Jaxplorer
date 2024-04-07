@@ -320,22 +320,22 @@ class Plotter(object):
     results_file = f'./logs/{self.exp}/0/results_{mode}_unmerged.csv'
     results.to_csv(results_file, index=False)
 
-  def compare_parameter(self, param_name, perf_name=None, image_name=None, constraints=[], mode='Train', stat='count', kde=False):
+  def compare_parameter(self, param, perf=None, image_name=None, constraints=[], mode='Train', stat='count', kde=False):
     '''
     Plot histograms for hyper-parameter selection.
-      perf_name: the performance metric from results_{mode}.csv, such as Return (mean).
-      param_name: the name of considered hyper-parameter, such lr.
+      perf: the performance metric from results_{mode}.csv, such as Return (mean).
+      param: the name of considered hyper-parameter, such lr.
       image_name: the name of the plotted image.
       constraints: a list of tuple (k, [x,y,...]). We only consider index with config_dict[k] in [x,y,...].
       mode: Train or Test.
       stat: for seaborn plot function
       kde: if True, plot all kdes (kernel density estimations) in one figure; o.w. plot histograms in different subfigures
     '''
-    param_name_short = param_name.split('/')[-1]
+    param_name_short = param.split('/')[-1]
     if image_name is None:
       image_name = param_name_short
-    if perf_name is None:
-      perf_name = f'{self.y_label} (mean)'
+    if perf is None:
+      perf = f'{self.y_label} (mean)'
     config_file = f'./configs/{self.exp}.json'
     results_file = f'./logs/{self.exp}/0/results_{mode}_unmerged.csv'
     if kde: 
@@ -346,28 +346,28 @@ class Plotter(object):
     assert os.path.exists(config_file), f'{config_file} does not exist.'
     # Load all results
     results = pd.read_csv(results_file)
-    # Select results based on the constraints and param_name
+    # Select results based on the constraints and param
     for k, vs in constraints:
       results = results.loc[lambda df: df[k].isin(vs), :]    
-    results = results.loc[:, [perf_name, param_name]]
-    results.rename(columns={param_name: param_name_short}, inplace=True)
+    results = results.loc[:, [perf, param]]
+    results.rename(columns={param: param_name_short}, inplace=True)
     # Plot
     param_values = sorted(list(set(results[param_name_short])))
     if len(param_values) == 1 and param_values[0] == '/':
       return
     if kde: # Plot all kdes in one figure
       fig, ax = plt.subplots()
-      # sns.histplot(data=results, x=perf_name, hue=param_name_short, kde=True, stat=stat, palette='bright', discrete=True)
-      sns.kdeplot(data=results, x=perf_name, hue=param_name_short, palette='bright')
+      # sns.histplot(data=results, x=perf, hue=param_name_short, kde=True, stat=stat, palette='bright', discrete=True)
+      sns.kdeplot(data=results, x=perf, hue=param_name_short, palette='bright')
       ax.grid(axis='y')
     else: # Plot histograms in different subfigures
       fig, axs = plt.subplots(len(param_values), 1, sharex=True, sharey=True, figsize=(7, 3*len(param_values)))
       if len(param_values) == 1:
         axs = [axs]
       for i, param_v in enumerate(param_values):
-        sns.histplot(data=results[results[param_name_short]==param_v], x=perf_name, hue=param_name_short, kde=False, stat=stat, palette='bright', ax=axs[i], discrete=True)
+        sns.histplot(data=results[results[param_name_short]==param_v], x=perf, hue=param_name_short, kde=False, stat=stat, palette='bright', ax=axs[i], discrete=True)
         axs[i].grid(axis='y')
-    plt.xlabel(perf_name)
+    plt.xlabel(perf)
     plt.tight_layout()
     plt.savefig(image_path)
     if self.show:
@@ -376,34 +376,77 @@ class Plotter(object):
     plt.cla()   # clear axis
     plt.close() # close window
 
-  def get_top_result(self, group_keys, group_fn='mean_std', perf_name=None, ascending=False, top_n=None, mode='Test', dn=3, markdown=True):
+  def get_topn_result(self, group_keys, group_fn='mean_std', perf=None, ascending=False, topn=None, mode='Test', nd=2, markdown=True):
     '''
     Print averaged top results
       group_keys: keys to group all results.
-      perf_name: the performance metric from results_{mode}.csv, such as Return (mean).
+      group_fn: min_max or mean_std.
+      perf: the performance metric from results_{mode}.csv, such as Return (mean).
       ascending: sort results with ascending/decending order.
-      top_n: select top_n results. When it is None, select all results.
+      topn: select topn results. When it is None, select all results.
       mode: Train or Test.
-      dn: number of decimal digits.
-    '''    
-    if perf_name is None:
-      perf_name = f'{self.y_label} (mean)'
+      nd: number of decimal digits to display.
+    '''
+    if perf is None:
+      perf = f'{self.y_label} (bmean)'
     config_file = f'./configs/{self.exp}.json'
     results_file = f'./logs/{self.exp}/0/results_{mode}_merged.csv'
     assert os.path.exists(results_file), f'{results_file} does not exist. Please generate it first with csv_unmerged_results.'
     assert os.path.exists(config_file), f'{config_file} does not exist.'
     # Load all results
     results = pd.read_csv(results_file)
-    # Select results based on the constraints and param_name
+    # Select results based on the constraints and param
     def min_max(group):
-      l = group.sort_values(by=perf_name, ascending=ascending)[:top_n][perf_name].to_numpy(na_value=0)
-      return pd.DataFrame({'min-->max': [f'({l.min():.{dn}f}, {l.max():.{dn}f})']})
+      l = group.sort_values(by=perf, ascending=ascending)[:topn][perf].to_numpy(na_value=0)
+      return pd.DataFrame({'min-->max': [f'{l.min():.{nd}f}-->{l.max():.{nd}f}']})
     def mean_std(group):
-      l = group.sort_values(by=perf_name, ascending=ascending)[:top_n][perf_name].to_numpy(na_value=0)
-      return pd.DataFrame({'mean+/-std': [f'({l.mean():.{dn}f}, {l.std():.{dn}f})']})
+      l = group.sort_values(by=perf, ascending=ascending)[:topn][perf].to_numpy(na_value=0)
+      return pd.DataFrame({'mean+/-std': [f'{l.mean():.{nd}f}+/-{l.std():.{nd}f}']})
+    # Get the intersection of two key list
+    group_keys = list(set(group_keys).intersection(results.columns.tolist()))
     grouped_results = results.groupby(by=group_keys).apply(eval(group_fn)).reset_index(level=-1, drop=True)
-    print('Performance measurement:', perf_name)
-    print(f'Top {top_n} results:')
+    print('Performance measurement:', perf)
+    print(f'Top {topn} results:')
+    print(grouped_results)
+    print('-'*20)
+    if markdown:
+      markdown_table = grouped_results.to_markdown(tablefmt='github')
+      print('Markdown Table:')
+      print(markdown_table)
+      print('-'*20)
+
+  def get_top1_result(self, group_keys, perf=None, errorbar=None, ascending=False, mode='Test', nd=2, markdown=True):
+    '''
+    Print top 1 result
+      group_keys: keys to group all results.
+      perf: the performance metric from results_{mode}.csv, such as Return (bmean).
+      errorbar: the error bar from results_{mode}.csv, such as Return (ci=95).
+      ascending: sort results with ascending/decending order.
+      mode: Train or Test.
+      nd: number of decimal digits.
+    '''
+    topn = 1
+    if perf is None:
+      perf = f'{self.y_label} (bmean)'
+    if errorbar is None:
+      perf = f'{self.y_label} (ci=95)'
+    config_file = f'./configs/{self.exp}.json'
+    results_file = f'./logs/{self.exp}/0/results_{mode}_merged.csv'
+    assert os.path.exists(results_file), f'{results_file} does not exist. Please generate it first with csv_unmerged_results.'
+    assert os.path.exists(config_file), f'{config_file} does not exist.'
+    # Load all results
+    results = pd.read_csv(results_file)
+    # Select results based on the constraints and param
+    def top1(group):
+      l = group.sort_values(by=perf, ascending=ascending)[:1]
+      mean_value = l[perf].to_numpy(na_value=0)[0]
+      errorbar_value = l[errorbar].to_numpy(na_value=0)[0]
+      return pd.DataFrame({'bmean+/-ci': [f'{mean_value:.{nd}f}+/-{errorbar_value:.{nd}f}']})
+    # Get the intersection of two key list
+    group_keys = list(set(group_keys).intersection(results.columns.tolist()))
+    grouped_results = results.groupby(by=group_keys).apply(top1).reset_index(level=-1, drop=True)
+    print('Performance measurement:', perf)
+    print(f'Top {topn} results:')
     print(grouped_results)
     print('-'*20)
     if markdown:

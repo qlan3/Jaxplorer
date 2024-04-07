@@ -12,7 +12,6 @@ Jaxplorer is a **Jax** reinforcement learning (RL) framework for **exploring** n
 ## TODO
 
 - Add more descriptions about slurm and hyper-parameter comparison.
-- Improve the performance of PPO in MuJoCo tasks.
 - Add more algorithms, such as DQN for Atari games.
 
 
@@ -23,7 +22,8 @@ Jaxplorer is a **Jax** reinforcement learning (RL) framework for **exploring** n
 - [Gymnasium](https://github.com/Farama-Foundation/Gymnasium): `pip install gymnasium==0.29.1`
 - [MuJoCo](https://github.com/google-deepmind/mujoco): `pip install mujoco==2.3.7`
 - [Gymnasium(mujoco)](https://gymnasium.farama.org/environments/mujoco/): `pip install gymnasium[mujoco]`
-- Others: Please check `requirements.txt`.
+- [Gym Games](https://github.com/qlan3/gym-games): >=2.0.0.
+- Others: `pip install -r requirements.txt`.
 
 
 ## Implemented algorithms

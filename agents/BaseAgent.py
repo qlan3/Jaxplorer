@@ -55,7 +55,7 @@ class BaseAgent(object):
     grad_clip = optim_kwargs['grad_clip']
     max_grad_norm = optim_kwargs['max_grad_norm']
     del optim_kwargs['anneal_lr'], optim_kwargs['grad_clip'], optim_kwargs['max_grad_norm']
-    assert not (grad_clip > 0 and max_grad_norm > 0), 'Either grad_clip or max_grad_norm should be set.'
+    assert not (grad_clip > 0 and max_grad_norm > 0), 'Cannot apply both grad_clip and max_grad_norm at the same time.'
     if anneal_lr and schedule is not None:
       optim_kwargs['learning_rate'] = schedule
     if grad_clip > 0:

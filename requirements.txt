@@ -2,6 +2,7 @@ jax>=0.4.20
 mujoco==2.3.7
 gymnasium>=0.29.1
 flax>=0.7.5
+distrax>=0.1.5
 matplotlib>=3.8.1
 numpy>=1.25.2
 optax>=0.1.7
@@ -10,3 +11,4 @@ psutil>=5.9.6
 seaborn>=0.13.0
 pyarrow
 gpustat
+tqdm

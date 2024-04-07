@@ -15,7 +15,7 @@ from components.networks import MLPGaussianTanhActor, MLPQCritic, Temperature
 
 class SAC(BaseAgent):
   """
-  Implementation of SAC (Soft Actor-Critic).
+  Implementation of Soft Actor-Critic.
   """
   def __init__(self, cfg):
     cfg['agent'].setdefault('actor_update_steps', 1)
