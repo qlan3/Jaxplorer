@@ -84,15 +84,16 @@ class MinAtarQNet(nn.Module):
   net_cfg: FrozenDict = FrozenDict({'feature_dim': 128, 'hidden_act': 'ReLU'})
   kernel_init: Initializer = default_init
   action_size: int = 10
+  last_w_scale: float = -1.0
   
   def setup(self):
     self.Q_net = nn.Sequential([
-      nn.Conv(16, kernel_size=(3, 3), strides=(1, 1), kernel_init=self.kernel_init),
+      nn.Conv(16, kernel_size=(3, 3), strides=(1, 1), kernel_init=self.kernel_init()),
       activations[self.net_cfg['hidden_act']],
       lambda x: x.reshape((x.shape[0], -1)), # flatten
-      nn.Dense(self.net_cfg['feature_dim'], kernel_init=self.kernel_init),
+      nn.Dense(self.net_cfg['feature_dim'], kernel_init=self.kernel_init()),
       activations[self.net_cfg['hidden_act']],
-      nn.Dense(self.action_size, kernel_init=self.kernel_init)
+      nn.Dense(self.action_size, kernel_init=self.kernel_init(self.last_w_scale))
     ])
 
   def __call__(self, obs):
@@ -162,57 +163,28 @@ class MLPGaussianActor(nn.Module):
   """ MLP actor network with Guassian policy N(mu, std). """
   action_size: int = 4
   net_cfg: FrozenDict = FrozenDict({'hidden_dims': [32,32], 'hidden_act': 'ReLU'})
-  log_std_min: float = -20.0
-  log_std_max: float = 2.0
   kernel_init: Initializer = default_init
   last_w_scale: float = -1.0
 
   def setup(self):
-    self.actor_net = MLP(
-      layer_dims = list(self.net_cfg['hidden_dims'])+[self.action_size],
+    self.actor_feature = MLP(
+      layer_dims = list(self.net_cfg['hidden_dims']),
       hidden_act = self.net_cfg['hidden_act'],
+      output_act = self.net_cfg['hidden_act'],
       kernel_init = self.kernel_init,
-      last_w_scale = self.last_w_scale
+      last_w_scale = -1.0
     )
-    self.action_log_std = self.param('log_std', zeros_init(), (self.action_size,))
+    self.actor_mean = nn.Dense(self.action_size, kernel_init=self.kernel_init(self.last_w_scale))
+    self.actor_std = nn.Sequential([
+      nn.Dense(self.action_size, kernel_init=self.kernel_init(self.last_w_scale)),
+      nn.sigmoid
+    ])
 
   def __call__(self, obs):
-    u_mean = self.actor_net(obs)
-    u_log_std = jnp.clip(self.action_log_std, self.log_std_min, self.log_std_max)
-    u_log_std = jnp.broadcast_to(u_log_std, u_mean.shape)
-    return u_mean, u_log_std
-
-
-class PPONet(nn.Module):
-  action_size: int = 4
-  actor_net_cfg: FrozenDict = FrozenDict({'hidden_dims': [32,32], 'hidden_act': 'ReLU'})
-  critic_net_cfg: FrozenDict = FrozenDict({'hidden_dims': [32,32], 'hidden_act': 'ReLU'})
-  log_std_min: float = -20.0
-  log_std_max: float = 2.0
-  kernel_init: Initializer = default_init
-
-  def setup(self):
-    self.actor_net = MLP(
-      layer_dims = list(self.actor_net_cfg['hidden_dims'])+[self.action_size],
-      hidden_act = self.actor_net_cfg['hidden_act'],
-      kernel_init = self.kernel_init,
-      last_w_scale = 0.01
-    )
-    self.action_log_std = self.param('log_std', zeros_init(), (self.action_size,))
-    self.critic_net = MLP(
-      layer_dims = list(self.critic_net_cfg['hidden_dims']) + [1],
-      hidden_act = self.critic_net_cfg['hidden_act'],
-      kernel_init = self.kernel_init,
-      last_w_scale = 1.0
-    )  
-
-  def __call__(self, obs):
-    u_mean = self.actor_net(obs)
-    u_log_std = jnp.clip(self.action_log_std, self.log_std_min, self.log_std_max)
-    return u_mean, u_log_std, self.critic_net(obs).squeeze(-1)
-  
-  def get_v(self, obs):
-    return self.critic_net(obs).squeeze(-1)
+    feature = self.actor_feature(obs)
+    u_mean = self.actor_mean(feature)
+    u_std = self.actor_std(feature)
+    return u_mean, u_std
 
 
 class MLPGaussianTanhActor(nn.Module):

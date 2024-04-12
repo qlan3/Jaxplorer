@@ -1,7 +1,6 @@
 import jax
 import time
 import optax
-import numpy as np
 from tqdm import tqdm
 import jax.numpy as jnp
 import flax.linen as nn
@@ -151,7 +150,7 @@ class SAC(BaseAgent):
     critic_state = critic_state.apply_gradients(grads=grads)
     # Soft-update target network
     critic_state = critic_state.replace(
-      target_params = optax.incremental_update(critic_state.params, critic_state.target_params, self.cfg['tau'])
+      target_params = optax.incremental_update(critic_state.params, critic_state.target_params, self.cfg['agent']['tau'])
     )
     return critic_state
 

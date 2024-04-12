@@ -72,7 +72,7 @@ class DDPG(SAC):
     critic_state = critic_state.apply_gradients(grads=grads)
     # Soft-update target network
     critic_state = critic_state.replace(
-      target_params = optax.incremental_update(critic_state.params, critic_state.target_params, self.cfg['tau'])
+      target_params = optax.incremental_update(critic_state.params, critic_state.target_params, self.cfg['agent']['tau'])
     )
     return critic_state
 
@@ -89,6 +89,6 @@ class DDPG(SAC):
     actor_state = actor_state.apply_gradients(grads=grads)
     # Soft-update target network
     actor_state = actor_state.replace(
-      target_params = optax.incremental_update(actor_state.params, actor_state.target_params, self.cfg['tau'])
+      target_params = optax.incremental_update(actor_state.params, actor_state.target_params, self.cfg['agent']['tau'])
     )
     return actor_state, None

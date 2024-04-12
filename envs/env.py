@@ -1,6 +1,7 @@
+import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
-from gymnasium.wrappers import ClipAction, RescaleAction, RecordEpisodeStatistics
+from gymnasium.wrappers import ClipAction, RescaleAction, RecordEpisodeStatistics, FlattenObservation, NormalizeObservation, NormalizeReward, TransformObservation, TransformReward
 from envs.wrappers import UniversalSeed
 
 import gym_pygame
@@ -18,6 +19,25 @@ def make_env(env_name, deque_size=1, **kwargs):
   # Action wrapper
   if isinstance(env.action_space, spaces.Box): # Continuous action space
     env = ClipAction(RescaleAction(env, min_action=-1, max_action=1))
+  # Seed wrapper: must be the last wrapper to be effective
+  env = UniversalSeed(env)
+  return env
+
+
+def ppo_make_env(env_name, gamma=0.99, deque_size=1, **kwargs):
+  """ Make env for PPO. """
+  env = gym.make(env_name, **kwargs)
+  # Episode statistics wrapper: set it before reward wrappers
+  env = RecordEpisodeStatistics(env, deque_size=deque_size)
+  # Action wrapper
+  env = ClipAction(RescaleAction(env, min_action=-1, max_action=1))
+  # Obs wrapper
+  env = FlattenObservation(env) # For dm_control
+  env = NormalizeObservation(env)
+  env = TransformObservation(env, lambda obs: np.clip(obs, -10, 10))
+  # Reward wrapper
+  env = NormalizeReward(env, gamma=gamma)
+  env = TransformReward(env, lambda reward: np.clip(reward, -10, 10))
   # Seed wrapper: must be the last wrapper to be effective
   env = UniversalSeed(env)
   return env

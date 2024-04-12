@@ -1,9 +1,8 @@
 #!/bin/bash
-# Ask SLURM to send the USR1 signal 300 seconds before end of the time limit
+# Ask SLURM to send the USR1 signal 60 seconds before end of the time limit
 #SBATCH --signal=B:USR1@60
 #SBATCH --output=output/%x/%a.txt
 #SBATCH --mail-type=ALL
-#SBATCH --exclude=bc11202,bc11203,bc11357,bc11322,bc11234
 
 # ---------------------------------------------------------------------
 echo "Current working directory: `pwd`"
@@ -26,9 +25,8 @@ cleanup()
 # Call `cleanup` once we receive USR1 or EXIT signal
 trap 'cleanup' USR1 EXIT
 # ---------------------------------------------------------------------
-# export OMP_NUM_THREADS=1
-module load StdEnv/2023 gcc/12.3 cudacore/.12.2.2 cudnn/8.9 cuda/12.2 mujoco/3.0.1 python/3.11 scipy-stack arrow
-source ~/envs/invert/bin/activate
+module load StdEnv/2020 gcc/9.3.0 cudacore/.11.4.2 cudnn/8.2.0 cuda/11.4 mujoco/2.3.6 python/3.11 scipy-stack/2022a arrow
+source ~/envs/jaxplorer/bin/activate
 
 python main.py --config_file ./configs/${SLURM_JOB_NAME}.json --config_idx $SLURM_ARRAY_TASK_ID --slurm_dir $SLURM_TMPDIR
 # python main.py --config_file ./configs/${SLURM_JOB_NAME}.json --config_idx $SLURM_ARRAY_TASK_ID

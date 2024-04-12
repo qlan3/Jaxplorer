@@ -2,35 +2,11 @@ import jax
 import time
 import math
 import distrax
-import numpy as np
 from tqdm import tqdm
 import jax.numpy as jnp
-import flax.linen as nn
 from functools import partial
 
-import gymnasium as gym
-from gymnasium import wrappers
-from envs.wrappers import UniversalSeed
-
-def ppo_make_env(env_name, gamma=0.99, deque_size=1, **kwargs):
-  """ Make env for PPO. """
-  env = gym.make(env_name, **kwargs)
-  # Episode statistics wrapper: set it before reward wrappers
-  env = wrappers.RecordEpisodeStatistics(env, deque_size=deque_size)
-  # Action wrapper
-  env = wrappers.ClipAction(wrappers.RescaleAction(env, min_action=-1, max_action=1))
-  # Obs wrapper
-  env = wrappers.FlattenObservation(env) # For dm_control
-  env = wrappers.NormalizeObservation(env)
-  env = wrappers.TransformObservation(env, lambda obs: np.clip(obs, -10, 10))
-  # Reward wrapper
-  env = wrappers.NormalizeReward(env, gamma=gamma)
-  env = wrappers.TransformReward(env, lambda reward: np.clip(reward, -10, 10))
-  # Seed wrapper: must be the last wrapper to be effective
-  env = UniversalSeed(env)
-  return env
-
-
+from envs.env import ppo_make_env
 from agents.BaseAgent import BaseAgent, TrainState
 from components.replay import FiniteReplay
 from components.networks import MLPVCritic, MLPGaussianActor, MLPCategoricalActor
@@ -66,7 +42,6 @@ class PPO(BaseAgent):
       return frac * lr
     dummy_obs = self.env['Train'].observation_space.sample()[None,]
     self.seed, actor_seed, critic_seed = jax.random.split(self.seed, 3)
-    # Set actor network
     if self.action_type == 'DISCRETE':
       actor_net = MLPCategoricalActor
     elif self.action_type == 'CONTINUOUS':
@@ -102,12 +77,13 @@ class PPO(BaseAgent):
         # Take a env step
         next_obs, reward, terminated, truncated, info = self.env[mode].step(action)
         # Save experience
-        mask = self.discount * (1 - terminated)
+        done = terminated or truncated
+        mask = self.discount * (1.0 - done)
         self.save_experience(obs, action, reward, mask, v, log_pi)
         # Update observation
         obs = next_obs
         # Record and reset
-        if terminated or truncated:
+        if done:
           result_dict = {
             'Env': self.env_name,
             'Agent': self.agent_name,
@@ -148,20 +124,20 @@ class PPO(BaseAgent):
 
   @partial(jax.jit, static_argnames=['self'])
   def random_action(self, actor_state, critic_state, obs, seed):
-    seed, action_seed = jax.random.split(seed, 2)
-    action_mean, action_log_std = actor_state.apply_fn(actor_state.params, obs)
-    pi = distrax.MultivariateNormalDiag(action_mean, jnp.exp(action_log_std))
-    v = critic_state.apply_fn(critic_state.params, obs)
+    seed, action_seed = jax.random.split(seed)
+    action_mean, action_std = actor_state.apply_fn(actor_state.params, obs)
+    pi = distrax.Normal(loc=action_mean, scale=action_std)
     action = pi.sample(seed=action_seed)
-    log_pi = pi.log_prob(action)
+    log_pi = pi.log_prob(action).sum(-1)
+    v = critic_state.apply_fn(critic_state.params, obs)
     return action, v, log_pi, seed
 
   @partial(jax.jit, static_argnames=['self'])
   def optimal_action(self, actor_state, critic_state, obs, seed):
-    action_mean, action_log_std = actor_state.apply_fn(actor_state.params, obs)
-    pi = distrax.MultivariateNormalDiag(action_mean, jnp.exp(action_log_std))
+    action_mean, action_std = actor_state.apply_fn(actor_state.params, obs)
+    pi = distrax.Normal(loc=action_mean, scale=action_std)
+    log_pi = pi.log_prob(action_mean).sum(-1)
     v = critic_state.apply_fn(critic_state.params, obs)
-    log_pi = pi.log_prob(action_mean)
     return action_mean, v, log_pi, seed
 
   @partial(jax.jit, static_argnames=['self'])
@@ -195,10 +171,11 @@ class PPO(BaseAgent):
       init = (0.0, last_v),
       xs = trajectory,
       length = self.cfg['agent']['collect_steps'],
-      reverse = True,
+      reverse = True
     )
-    trajectory['adv'] = adv
     trajectory['v_target'] = adv + trajectory['v']
+    # Normalize advantage
+    trajectory['adv'] = (adv - adv.mean()) / (adv.std() + 1e-8)
     return trajectory
   
   @partial(jax.jit, static_argnames=['self'])
@@ -215,44 +192,41 @@ class PPO(BaseAgent):
       lambda x: jnp.reshape(x, (-1, self.cfg['batch_size']) + x.shape[1:]),
       shuffled_trajectory,
     )
-    carry = (actor_state, critic_state)
-    carry, _ = jax.lax.scan(
+    (actor_state, critic_state), _ = jax.lax.scan(
       f = self.update_batch,
-      init = carry,
+      init = (actor_state, critic_state),
       xs = batches
     )
-    actor_state, critic_state = carry
     carry = (actor_state, critic_state, trajectory, seed)
     return carry, None
   
   @partial(jax.jit, static_argnames=['self'])
   def update_batch(self, carry, batch):
     actor_state, critic_state = carry
-    adv = (batch['adv'] - batch['adv'].mean()) / (batch['adv'].std() + 1e-8)
+    # Set loss function
     def compute_loss(params):
-      actor_param, critic_param = params
       # Compute critic loss
-      v = critic_state.apply_fn(critic_param, batch['obs'])
-      v_clipped = batch['v'] + (v - batch['v']).clip(-self.cfg['agent']['clip_ratio'], self.cfg['agent']['clip_ratio'])
-      critic_loss_unclipped = jnp.square(v - batch['v_target'])
-      critic_loss_clipped = jnp.square(v_clipped - batch['v_target'])
-      critic_loss = 0.5 * jnp.maximum(critic_loss_unclipped, critic_loss_clipped).mean()
+      v = critic_state.apply_fn(params['critic'], batch['obs'])
+      critic_loss = jnp.square(v - batch['v_target']).mean()      
       # Compute actor loss
-      action_mean, action_log_std = actor_state.apply_fn(actor_param, batch['obs'])
-      pi = distrax.MultivariateNormalDiag(action_mean, jnp.exp(action_log_std))
-      log_pi = pi.log_prob(batch['action'])
+      action_mean, action_std = actor_state.apply_fn(params['actor'], batch['obs'])
+      pi = distrax.Normal(loc=action_mean, scale=action_std)
+      log_pi = pi.log_prob(batch['action']).sum(-1)
       ratio = jnp.exp(log_pi - batch['log_pi'])
-      obj = ratio * adv
-      obj_clipped = jnp.clip(ratio, 1.0-self.cfg['agent']['clip_ratio'], 1.0+self.cfg['agent']['clip_ratio']) * adv
+      obj = ratio * batch['adv']
+      obj_clipped = jnp.clip(ratio, 1.0-self.cfg['agent']['clip_ratio'], 1.0+self.cfg['agent']['clip_ratio']) * batch['adv']
       actor_loss = -jnp.minimum(obj, obj_clipped).mean()
-      # Compute entropy
-      entropy = pi.entropy().mean()
-      total_loss = actor_loss + self.cfg['agent']['vf_coef'] * critic_loss - self.cfg['agent']['ent_coef'] * entropy
+      # Compute entropy loss
+      entropy_loss = pi.entropy().sum(-1).mean()
+      total_loss = actor_loss + self.cfg['agent']['vf_coef'] * critic_loss - self.cfg['agent']['ent_coef'] * entropy_loss
       return total_loss
-
-    grads = jax.grad(compute_loss)((actor_state.params, critic_state.params))
-    actor_grads, critic_grads = grads
-    actor_state = actor_state.apply_gradients(grads=actor_grads)
-    critic_state = critic_state.apply_gradients(grads=critic_grads)
+    # Update train_state and critic_state
+    params = {
+      'actor': actor_state.params,
+      'critic': critic_state.params
+    }
+    grads = jax.grad(compute_loss)(params)
+    actor_state = actor_state.apply_gradients(grads=grads['actor'])
+    critic_state = critic_state.apply_gradients(grads=grads['critic'])
     carry = (actor_state, critic_state)
     return carry, None

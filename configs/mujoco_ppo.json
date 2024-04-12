@@ -20,8 +20,7 @@
   }],
   "optim": [{
     "name": ["Adam"],
-    "anneal_lr": [true],
-    "kwargs": [{"learning_rate": [3e-4], "anneal_lr": [true], "eps": [1e-5], "max_grad_norm": [0.5]}]
+    "kwargs": [{"learning_rate": [3e-4], "max_grad_norm": [0.5], "anneal_lr": [true]}]
   }],
   "batch_size": [64],
   "display_interval": [1],

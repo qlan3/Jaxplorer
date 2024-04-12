@@ -62,14 +62,20 @@ cfg = {
 def analyze(exp, runs=1):
   cfg['exp'] = exp
   cfg['runs'] = runs
+  '''
   sweep_keys_dict = dict(
     dqn = ['optim/kwargs/learning_rate'],
     ddqn = ['optim/kwargs/learning_rate'],
     maxmin = ['optim/kwargs/learning_rate', 'agent/critic_num'],
+    td = ['optim/kwargs/learning_rate'],
+    sac = ['optim/kwargs/learning_rate'],
+    naf = ['optim/kwargs/learning_rate'],
     ppo = ['optim/kwargs/learning_rate'],
+    ddpg = ['optim/kwargs/learning_rate'],
   )
   algo = exp.rstrip('0123456789').split('_')[-1]
   cfg['sweep_keys'] = sweep_keys_dict[algo]
+  '''
   plotter = Plotter(cfg)
 
   plotter.csv_merged_results('Train', get_csv_result_dict, get_process_result_dict)
@@ -77,7 +83,8 @@ def analyze(exp, runs=1):
 
   # plotter.csv_unmerged_results('Train', get_process_result_dict)
   # group_keys = ['optim/kwargs/learning_rate', 'agent/critic_num']
-  # plotter.get_top1_result(group_keys=group_keys, perf='Return (bmean)', errorbar='Return (ci=95)', mode='Train', nd=2, markdown=False)
+  # group_keys = ['Env']
+  # plotter.get_top1_result(group_keys=group_keys, perf='Return (bmean)', errorbar='Return (ci=95)', mode='Train', nd=0, markdown=False)
   
   # Hyper-parameter Comparison
   # plotter.csv_unmerged_results('Train', get_process_result_dict)

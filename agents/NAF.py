@@ -69,6 +69,6 @@ class NAF(SAC):
     critic_state = critic_state.apply_gradients(grads=grads)
     # Soft-update target network
     critic_state = critic_state.replace(
-      target_params = optax.incremental_update(critic_state.params, critic_state.target_params, self.cfg['tau'])
+      target_params = optax.incremental_update(critic_state.params, critic_state.target_params, self.cfg['agent']['tau'])
     )
     return critic_state

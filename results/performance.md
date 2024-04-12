@@ -1,7 +1,9 @@
 This document records the best hyper-parameter setup for each (task, algorithm) pair, in terms of training performance.
-All performance results are averaged over 5 runs with standard deviation reported as well.
 
 ## Gym Classic Control
+
+- Performance metric: average returns of last 10 (for training) or 5 (for testing) episodes.
+- Reported performance: average performance over 5 runs with 1 standard deviation.
 
 ### MountainCar-v0
 
@@ -42,6 +44,9 @@ All performance results are averaged over 5 runs with standard deviation reporte
 
 ## Gym Box2D
 
+- Performance metric: average returns of last 10 (for training) or 5 (for testing) episodes.
+- Reported performance: average performance over 5 runs with 1 standard deviation.
+
 ### LunarLander-v2
 
 | Algo\Param |  train perf  |   test perf   |  cfg file    | cfg index |   lr   | critic_num |
@@ -56,6 +61,9 @@ All performance results are averaged over 5 runs with standard deviation reporte
 
 
 ## PyGame Learning Environment
+
+- Performance metric: average returns of last 10 (for training) or 5 (for testing) episodes.
+- Reported performance: average performance over 5 runs with 1 standard deviation.
 
 ### Catcher-PLE-v0
 
@@ -80,6 +88,20 @@ All performance results are averaged over 5 runs with standard deviation reporte
 |  MaxminDQN |  52 $\pm$ 2  | 64 $\pm$ 3  | pygame_maxmin |    30     | 0.0001 |     6      |
 |  MaxminDQN |  56 $\pm$ 3  | 56 $\pm$ 1  | pygame_maxmin |    32     | 0.0001 |     8      |
 
+
+## MuJoCo
+
+- Performance metric: average training returns of last 10% episodes.
+- Reported performance: bootstrapped average performance over 5 runs with 95% confidence interval.
+
+|   Task\Algo    |       PPO      |       SAC       |       DDPG      |       TD3      |
+| -------------- | -------------- | --------------- | --------------- | -------------- |
+| Ant-v4         | 1920 $\pm$ 393 |  4989 $\pm$ 332 | 1411 $\pm$ 576  | 2780 $\pm$ 244 |
+| HalfCheetah-v4 | 3868 $\pm$ 585 | 10469 $\pm$ 269 | 9441 $\pm$ 553  | 8587 $\pm$ 453 |
+| Hopper-v4      | 2334 $\pm$ 147 |  2459 $\pm$ 352 | 1750 $\pm$ 283  | 2437 $\pm$ 730 |
+| Humanoid-v4    |  670 $\pm$ 23  |  5141 $\pm$ 125 | 3190 $\pm$ 1013 | 4948 $\pm$ 299 |
+| Swimmer-v4     |   68 $\pm$ 11  |    62 $\pm$ 7   |   99 $\pm$ 23   |   83 $\pm$ 20  |
+| Walker2d-v4    | 2857 $\pm$ 379 |  4285 $\pm$ 538 | 2424 $\pm$ 595  | 3959 $\pm$ 444 |
 
 
 ## MinAtar

@@ -1,7 +1,4 @@
 import jax
-import time
-import random
-from tqdm import tqdm
 import flax.linen as nn
 import jax.numpy as jnp
 from functools import partial

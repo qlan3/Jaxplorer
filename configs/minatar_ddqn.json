@@ -33,6 +33,6 @@
   "test_episodes": [5],
   "discount": [0.99],
   "seed": [1],
-  "device": ["cuda"],
+  "device": ["cpu"],
   "generate_random_seed": [true]
 }

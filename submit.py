@@ -23,8 +23,8 @@ def main(argv):
     # 'account': 'def-ashique',
     'account': 'rrg-ashique',
     # Job name
-    # 'job-name': 'naf1', # 1/2GPU, 8G, 75min
-    'job-name': 'sac1', # 1/2GPU, 8G, 75min
+    'job-name': 'mujoco_sac', # 1/2GPU, 1CPU, 8G, 75min
+    'job-name': 'mujoco_sac', # 1GPU, 1CPU, 8G, 50min
     # Job time
     'time': '0-01:15:00',
     # Email notification
@@ -39,8 +39,7 @@ def main(argv):
     'cluster_capacity': 996,
     # Job indexes list
     # 'job-list': np.array([1,2])
-    # 'job-list': np.array(range(3, 40+1))
-    'job-list': np.array(range(1, 5+1))
+    'job-list': np.array(range(1, 60+1))
   }
   make_dir(f"output/{sbatch_cfg['job-name']}")
 
@@ -50,7 +49,7 @@ def main(argv):
     # Max number of parallel jobs in one task
     max_parallel_jobs = 2
     mem_per_job = 8  # in GB
-    cpu_per_job = 4  # Larger cpus_per_job increases speed
+    cpu_per_job = 1  # Larger cpus_per_job increases speed
     mem_per_cpu = int(ceil(max_parallel_jobs*mem_per_job/cpu_per_job))
     # Write to procfile for Parallel
     with open('procfile', 'w') as f:
@@ -66,7 +65,7 @@ def main(argv):
     submitter.multiple_submit()
   elif args.job_type == 'S':
     mem_per_job = 8  # in GB
-    cpu_per_job = 4  # Larger cpus_per_job increases speed
+    cpu_per_job = 1  # Larger cpus_per_job increases speed
     mem_per_cpu = int(ceil(mem_per_job/cpu_per_job))
     sbatch_cfg['gres'] = 'gpu:1' # GPU type
     sbatch_cfg['cpus-per-task'] = cpu_per_job

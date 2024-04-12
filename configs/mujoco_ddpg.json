@@ -16,7 +16,8 @@
     "critic_net_cfg": [{
       "hidden_dims": [[256,256]],
       "hidden_act": ["ReLU"]
-    }]
+    }],
+    "tau": [0.005]
   }],
   "optim": [{
     "name": ["Adam"],
@@ -27,10 +28,9 @@
   "display_interval": [1e4],
   "show_progress": [false],
   "ckpt_interval": [1e5],
-  "test_interval": [1e4],
+  "test_interval": [-1],
   "test_episodes": [5],
   "discount": [0.99],
-  "tau": [0.005],
   "seed": [1],
   "device": ["cuda"],
   "generate_random_seed": [true]

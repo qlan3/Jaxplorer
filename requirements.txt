@@ -1,6 +1,6 @@
 jax>=0.4.20
-mujoco==2.3.7
-gymnasium>=0.29.1
+mujoco>=2.3.6,<3.0
+gymnasium>=0.29.1,<1.0
 flax>=0.7.5
 distrax>=0.1.5
 matplotlib>=3.8.1
@@ -12,3 +12,4 @@ seaborn>=0.13.0
 pyarrow
 gpustat
 tqdm
+tabulate
