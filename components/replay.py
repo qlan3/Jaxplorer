@@ -52,10 +52,7 @@ class FiniteReplay(object):
       return self.pos
 
   def is_empty(self):
-    if self.size() == 0:
-      return True
-    else:
-      return False
+    return self.size() == 0
   
   def is_full(self):
     return self.full
